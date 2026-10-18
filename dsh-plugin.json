@@ -1,0 +1,26 @@
+{
+  "$schema": "https://raw.githubusercontent.com/T-Auto/dsh-std/8a15541117cb3c13ddb8f2468308691b6051d162/packages/manifest/schema/dsh-plugin-0.15.schema.json",
+  "manifestVersion": "0.15",
+  "id": "reflex-guard.guard",
+  "name": "reflex-guard",
+  "version": "0.1.3",
+  "license": "MIT",
+  "facets": { "host": { "entry": "lib/index.js", "apiVersion": "v1alpha1" } },
+  "requires": { "contracts": [ { "apiVersion": "tools.dsh/v1alpha1", "kind": "Tool" } ] },
+  "permissions": [
+    { "name": "reflex-guard.fs.read", "scope": "filesystem-read", "reason": "读取工作区路径以执行写范围(scope)校验。" }
+  ],
+  "contributes": {
+    "x-display": [
+      {
+        "icon": null,
+        "title": "reflex-guard",
+        "description": "拦截+反思+重试守卫：执行前校验工具调用，违规回传可行动的反思提示，连续失败后硬断升级，减少幻觉污染并节省 token。",
+        "locales": ["locale/zh.json", "locale/en.json"]
+      }
+    ],
+    "x-components": [
+      { "id": "reflex-guard-guard", "entry": "reflex-guard/guard-component", "defaultEnabled": true }
+    ]
+  }
+}

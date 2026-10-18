@@ -1,0 +1,16 @@
+# reflex-guard：拦截+反思+重试守卫。唯一组件默认开启。
+- insert:
+    - id: reflex-guard-guard
+      name: reflex-guard/guard-component
+      config:
+        maxRetry: 2
+        writeScope: true
+        forbidOverwrite: true
+        writeTools: [write, edit, replace, ops_replace, rg_write]
+        # denyTools: [pwsh, ops_replace]        # 可选：工具黑名单（被禁工具拒绝并回传反思提示）
+        # allowTools: [read_file, edit_file]     # 可选：工具白名单（注意：若开启白名单，需把 rg_write 列入）
+        # schema: { "type": "object", "required": ["path"] }   # 可选：结构化参数校验
+        # rgWrite: false                          # 可选：关闭 rg_write 专用写工具注册（默认 true）
+        writeZone:                                # rg_write 写区（B 方案独立写环境）
+          root: rg-write-zone                     #   写区根目录，相对会话工作目录解析
+          allowOverwrite: false                   #   默认禁止覆盖已有文件（true 放开）

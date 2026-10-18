@@ -1,0 +1,25 @@
+{
+  "name": "@niumingqing/reflex-guard",
+  "version": "0.1.3",
+  "repository": { "type": "git", "url": "git+https://github.com/NIU-MING-qing/repository-homepage.git" },
+  "homepage": "https://github.com/NIU-MING-qing/repository-homepage",
+  "description": "拦截+反思+重试守卫：执行前校验工具调用，违规回传可行动的反思提示，连续失败硬断升级。零依赖，可作独立模块或 DSH 插件。",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./guard": "./lib/guard.js",
+    "./rules": "./lib/rules.js",
+    "./reflect": "./lib/reflect.js",
+    "./validate": "./lib/validate.js",
+    "./logger": "./lib/logger.js",
+    "./guard-component": "./lib/components/guard/index.js"
+  },
+  "bin": { "reflex-guard": "bin/reflex-guard.mjs" },
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } },
+  "files": ["lib", "bin", "cordis.patch.yml", "dsh-plugin.json", "locale", "README.md", "demo", "LICENSE"],
+  "keywords": ["dsh", "dsh-plugin", "deepseek-harness", "guardrails", "context-engineering", "agent", "reflection", "retry"],
+  "license": "MIT",
+  "publishConfig": { "access": "public" },
+  "engines": { "node": "^22.19 || >=24" }
+}

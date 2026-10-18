@@ -1,0 +1,4 @@
+{
+  "title": "reflex-guard",
+  "description": "Intercept, reflect, and retry guard: validate before execution, retry with reflection, escalate after repeated failures."
+}
