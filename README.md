@@ -83,7 +83,7 @@ DSH 宿主里注册一个零依赖的自定义工具 rg_write：在写区（writ
 
 ## 平台兼容性（如实说明，2026-10-16 源码级核实修正）
 - **此前文档称「DSH 对 write/edit 设有平台自我保护闸、拦不掉」，经对 DSH 0.2.0-rc.2 全库源码检索（295 个包）核实为误判**：平台没有这类「自我保护闸」（社区插件 dsh-tool-guard 自带的 PROTECTED_TOOLS=['read','write','edit','bash'] 是它自己的常量，与平台无关；平台唯一保留的名字是 run_code）。真正原因是本插件 0.1.x 读错了执行对象字段——DSH 工具执行对象的规范字段是 exec.arguments（dsh-tools 源码 3061/3163-3167/3310），旧代码读 exec.args 在生产环境恒为空对象，导致 writeScope/forbidOverwrite/jsonSchema 全放行、只有按工具名判定的 denyTools 生效。**0.1.1 已修复（读 exec.arguments，保留 args/params 兼容），writeScope/forbidOverwrite 现在对 write/edit 在生产环境真实生效**（verify-host [3k] 用例以 arguments 形状验证）。
-- **平台的写边界是进程内策略栅栏**（非内核边界）：workspace-write 模式下 ctx.fs 的写被 dsh-fs-sandbox 限制在 workspaceRoot（会话 header.cwd，不可变）+ /tmp + 系统临时目录内，越界抛 FS_SANDBOX_DENIED；读取不受限。shell/代码域由 Windows ACL 受限令牌链兜底。详见仓库外文档《DSH 独立写环境使用说明》。
+- **平台的写边界是进程内策略栅栏**（非内核边界）：workspace-write 模式下 ctx.fs 的写被 dsh-fs-sandbox 限制在 workspaceRoot（会话 header.cwd，不可变）+ /tmp + 系统临时目录内，越界抛 FS_SANDBOX_DENIED；读取不受限。shell/代码域由 Windows ACL 受限令牌链兜底。详见同仓文档《DSH 独立写环境使用说明》（docs/DSH-独立写环境使用说明.md）。
 - denyTools / allowTools / jsonSchema 拦截工具调用入口，与上述修复无关，此前即已生效（真机验证覆盖）。
 
 ## 0.1.2 修复（2026-10-16）
@@ -99,4 +99,4 @@ DSH 宿主里注册一个零依赖的自定义工具 rg_write：在写区（writ
 ## 说明
 - 用途：解决幻觉问题 + 提升性能（少 token、少轮次、少跑偏）。
 - 发布：0.1.0 首发于 npm 包名 reflex-guard（账号 niu-ming-ping，该账号 2FA 丢失无法再发布）；0.1.1 起发布为 @niumingqing/reflex-guard（新账号 niumingqing，包名含原名的 scoped 版，含 exec.arguments 字段修复与 rg_write 写区工具）；0.1.2 修复 rg_write 沙箱策略按会话解析与 writeScope 双路径键检查（详见上文「0.1.2 修复」）；0.1.3 补齐 repository/homepage（https://github.com/NIU-MING-qing/repository-homepage）。
-- 写环境文档：《DSH 独立写环境使用说明》（项目根目录上一级，与 README 同仓发布计划中）。
+- 写环境文档：《DSH 独立写环境使用说明》（docs/，与 README 同仓发布）。
