@@ -1,4 +1,4 @@
-// reflex-guard/demo/demo.js — 端到端演示：证明三个坑都被解决 + rg_write 写区
+// reflex-guard/demo/demo.js — 端到端演示：证明三个坑都被解决 + rg_write 写区 + forbidOverwrite 存在性检查
 import path from 'node:path';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -14,9 +14,9 @@ const root = path.resolve(here, '..'); // 仓库根当作「允许写入目录�
 function makeGuard() {
   return new Guard({
     rules: [
-      allowToolsRule(['read_file', 'edit_file', 'run_test']),
+      allowToolsRule(['read_file', 'edit_file', 'write_file', 'run_test']),
       writeScopeRule(root, { pathKey: 'path', onlyTools: ['edit_file', 'write_file'] }),
-      forbidOverwriteRule(),
+      forbidOverwriteRule({ onlyTools: ['write_file'] }),
       jsonSchemaRule(
         { type: 'object', required: ['path'], properties: { path: { type: 'string' } }, additionalProperties: false },
         { ruleId: 'edit-schema', tools: ['edit_file'] },
@@ -63,6 +63,17 @@ runScenario('越界写入被拦后纠正', {
     return this._i === 1
       ? { name: 'edit_file', args: { path: '/outside/evil.txt' } }  // 越界
       : { name: 'edit_file', args: { path: 'ok.txt' } };            // 纠正
+  },
+});
+
+// 2.5 forbidOverwrite（0.1.4）：整文件覆盖已存在文件 → 拒绝 → 换定点编辑（先读后改）
+runScenario('覆盖已存在文件被拦后改定点编辑', {
+  _i: 0,
+  next() {
+    this._i += 1;
+    return this._i === 1
+      ? { name: 'write_file', args: { path: path.join(root, 'package.json') } }  // 已存在 → no-overwrite
+      : { name: 'edit_file', args: { path: path.join(root, 'package.json') } };  // 定点编辑放行
   },
 });
 
@@ -160,3 +171,4 @@ console.log('演示结束：');
 console.log('  副作用泄漏  → 拦截发生在执行前（场景2越界写入未执行即被拦）');
 console.log('  假阳性死循环 → 硬断日志含规则ID轨迹，可判断是规则错还是模型错（场景3）');
 console.log('  成本失控     → maxRetry=2 硬上限，仅关键工具被拦（场景3最多两次反思）');
+console.log('  覆盖写入     → 已存在文件被整文件写工具覆盖时被拦，提示先读后改（场景2.5）');

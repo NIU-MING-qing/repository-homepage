@@ -6,6 +6,7 @@
         maxRetry: 2
         writeScope: true
         forbidOverwrite: true
+        # forbidOverwriteTools: [write]     # 覆盖写存在性检查覆盖的工具（默认 ['write']，可加 edit/ops_replace）
         writeTools: [write, edit, replace, ops_replace, rg_write]
         # denyTools: [pwsh, ops_replace]        # 可选：工具黑名单（被禁工具拒绝并回传反思提示）
         # allowTools: [read_file, edit_file]     # 可选：工具白名单（注意：若开启白名单，需把 rg_write 列入）

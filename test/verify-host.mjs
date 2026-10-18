@@ -70,6 +70,17 @@ console.log('[3j] 黑名单工具 pwsh ->', JSON.stringify(banned).slice(0, 110)
 const argk = drive({ name: 'write', arguments: { path: 'C:/outside/argk.txt' } });
 console.log('[3k] 生产字段 arguments 越界写 ->', JSON.stringify(argk).slice(0, 110));
 
+// [3l]-[3n] 0.1.4：forbidOverwrite 对已存在文件生效（不再依赖 mode 参数；内置 write 不传 mode）
+const owExistSeed = path.join(wsRoot, 'verify-host-exist.txt');
+fs.writeFileSync(owExistSeed, 'seed', 'utf8');
+const owExist = drive({ name: 'write', args: { path: 'verify-host-exist.txt' }, agent: { session: { header: { cwd: wsRoot } } } });
+console.log('[3l] 覆盖已存在文件(无mode) ->', JSON.stringify(owExist).slice(0, 150));
+const owNew = drive({ name: 'write', args: { path: 'verify-host-new.txt' }, agent: { session: { header: { cwd: wsRoot } } } });
+console.log('[3m] 写新文件(不存在) ->', JSON.stringify(owNew).slice(0, 90));
+const owEdit = drive({ name: 'edit', args: { file_path: 'verify-host-exist.txt' }, agent: { session: { header: { cwd: wsRoot } } } });
+console.log('[3n] edit 定点修改已存在文件(应放行) ->', JSON.stringify(owEdit).slice(0, 90));
+fs.rmSync(owExistSeed, { force: true });
+
 // [4] rg_write 专用写工具（B 方案）
 const rgTool = tools.get('rg_write');
 console.log('[4a] rg_write 注册 ->', rgTool ? 'present' : 'MISSING');
@@ -102,9 +113,12 @@ pass(drive({ name: 'write', args: { path: 'again-ok.txt' } }) === 'PASS_INNER', 
 pass(h2 && h2.kind === 'deny' && /write-scope/.test(h2.reason), '会话cwd动态根越界被拦');
 pass(deny1 && deny1.kind === 'deny' && /write-scope/.test(deny1.reason) && /允许范围/.test(deny1.reason), '越界写被拦(带原因+允许范围)');
 pass(esc && esc.kind === 'deny' && /硬断/.test(esc.reason), '连续3次违规硬断');
-pass(ow && ow.kind === 'deny' && /no-overwrite/.test(ow.reason), '覆盖写被拦');
+pass(ow && ow.kind === 'deny' && /no-overwrite/.test(ow.reason), '覆盖写被拦(mode)');
 pass(banned && banned.kind === 'deny' && /deny-tools/.test(banned.reason) && /允许范围/.test(banned.reason), 'denyTools 黑名单被拦(带原因+允许范围)');
 pass(argk && argk.kind === 'deny' && /write-scope/.test(argk.reason), 'exec.arguments 字段形状被拦(字段bug修复)');
+pass(owExist && owExist.kind === 'deny' && /no-overwrite/.test(owExist.reason) && /已存在/.test(owExist.reason), 'forbidOverwrite 覆盖已存在文件被拦(0.1.4 存在性检查)');
+pass(owNew === 'PASS_INNER', 'forbidOverwrite 写新文件放行');
+pass(owEdit === 'PASS_INNER', 'edit 定点修改已存在文件放行(先读后改)');
 pass(!!rgTool, 'rg_write 已注册');
 pass(rgPre === 'PASS_INNER', 'rg_write 写区内动作放行');
 pass(rgOutcome && rgOutcome.operation === 'create' && fs.existsSync(path.join(wsRoot, 'rg-write-zone', 'notes', 'a.txt')), 'rg_write 写区内落盘成功');
